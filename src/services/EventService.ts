@@ -6,23 +6,26 @@ export const getEvents = async (): Promise<Event[]> => {
     {
       id: "1",
       title: "Bear's Best",
-      date: "July 12, 2025",
+      date: new Date(2025, 6, 12),
       spotsRemaining: 12,
+      city: "Atlanta, GA",
       imageUrl: "/images/bears-best-atlanta.jpeg",
     },
     {
       id: "2",
-      title: "Twilight Tourney",
-      date: "July 16, 2025",
+      title: "Hamilton Mill",
+      date: new Date(2025, 6, 26),
       spotsRemaining: 8,
-      imageUrl: "/images/twilight.jpg",
+      city: "Atlanta, GA",
+      imageUrl: "/images/hamilton-mill-atlanta.jpg",
     },
     {
       id: "3",
-      title: "Speed Golf Sunday",
-      date: "July 19, 2025",
+      title: "Cobblestone",
+      date: new Date(2025, 7, 2),
       spotsRemaining: 5,
-      imageUrl: "/images/speedgolf.jpg",
+      city: "Atlanta, GA",
+      imageUrl: "/images/cobblestone-atlanta.jpg",
     },
   ];
 };
