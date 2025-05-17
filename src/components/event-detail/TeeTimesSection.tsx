@@ -1,12 +1,13 @@
 import React from "react";
-import type { TeeTime } from "../../services/teeTimeService";
+import type { TeeTime } from "../../models/TeeTime";
 
 interface Props {
   teeTimes: TeeTime[];
   loading: boolean;
+  timezone: string;
 }
 
-const TeeTimesSection: React.FC<Props> = ({ teeTimes, loading }) => {
+const TeeTimesSection: React.FC<Props> = ({ teeTimes, loading, timezone }) => {
   if (loading) {
     return <p className="text-gray-600">Loading tee times...</p>;
   }
@@ -23,9 +24,11 @@ const TeeTimesSection: React.FC<Props> = ({ teeTimes, loading }) => {
           >
             <div className="flex justify-between items-center">
               <span className="font-medium text-navy">
-                {teeTime.time.toLocaleTimeString([], {
+                {teeTime.time.toLocaleTimeString("en-US", {
                   hour: "numeric",
                   minute: "2-digit",
+                  timeZone: timezone,
+                  timeZoneName: "short",
                 })}
               </span>
               <span className="text-sm text-gray-600">

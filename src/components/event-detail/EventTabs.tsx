@@ -34,7 +34,7 @@ const EventTabs: React.FC<EventTabsProps> = ({
       >
         Tee Times
         <span className="ml-2 text-xs bg-navy text-white px-2 py-0.5 rounded-full">
-          {spotsRemaining} left
+          {spotsRemaining} spots left!
         </span>
       </button>
     </div>

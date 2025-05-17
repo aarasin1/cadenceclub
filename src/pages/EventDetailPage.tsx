@@ -2,9 +2,7 @@ import React, { useState } from "react";
 import { useParams } from "react-router-dom";
 import Navbar from "../components/NavBar";
 import { useEvents } from "../hooks/useEvents";
-import { useTeeTimes } from "../hooks/useTeeTimes";
 
-// Cleanly organized components
 import EventTabs from "../components/event-detail/EventTabs";
 import EventDetailsSection from "../components/event-detail/EventDetailsSection";
 import TeeTimesSection from "../components/event-detail/TeeTimesSection";
@@ -15,7 +13,6 @@ const EventDetailPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<"details" | "teeTimes">("details");
 
   const event = events.find((e) => e.id === eventId);
-  const { teeTimes, loading: teeTimesLoading } = useTeeTimes(eventId || "");
 
   if (eventsLoading || !event) {
     return (
@@ -34,7 +31,7 @@ const EventDetailPage: React.FC = () => {
         {/* Event Title */}
         <h1 className="text-3xl font-bold text-navy mb-6">{event.title}</h1>
 
-        {/* Tab Navigation */}
+        {/* Tabs */}
         <EventTabs
           activeTab={activeTab}
           setActiveTab={setActiveTab}
@@ -45,8 +42,9 @@ const EventDetailPage: React.FC = () => {
         {activeTab === "details" && <EventDetailsSection event={event} />}
         {activeTab === "teeTimes" && (
           <TeeTimesSection
-            teeTimes={teeTimes}
-            loading={teeTimesLoading}
+            teeTimes={event.teeTimes}
+            loading={false}
+            timezone={event.golf_course.timezone}
           />
         )}
       </div>
