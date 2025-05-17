@@ -1,8 +1,10 @@
+import type { GolfCourse } from "./GolfCourse.ts";
+
 export interface Event {
   id: string;
   title: string;
   date: Date;
-  city: string;
   spotsRemaining: number;
   imageUrl: string;
+  golf_course: GolfCourse;
 }

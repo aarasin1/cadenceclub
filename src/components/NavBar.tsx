@@ -6,7 +6,10 @@ const Navbar: React.FC = () => {
   return (
     <nav className="flex justify-end p-4 mb-6 bg-navy shadow-md">
       <div className="space-x-4 mr-2">
-        <button className="text-bone font-medium font-serif hover:text-white">
+        <button
+          onClick={() => nav("/")}
+          className="text-bone font-medium font-serif hover:text-white"
+        >
           Home
         </button>
         <button

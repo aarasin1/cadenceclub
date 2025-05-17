@@ -8,7 +8,12 @@ export const getEvents = async (): Promise<Event[]> => {
       title: "Bear's Best",
       date: new Date(2025, 6, 12),
       spotsRemaining: 12,
-      city: "Atlanta, GA",
+      golf_course: {
+        name: "Bear's Best",
+        logo: "/images/bears-best-logo.png",
+        location: "Atlanta, GA",
+        timezone: "America/New_York",
+      },
       imageUrl: "/images/bears-best-atlanta.jpeg",
     },
     {
@@ -16,7 +21,12 @@ export const getEvents = async (): Promise<Event[]> => {
       title: "Hamilton Mill",
       date: new Date(2025, 6, 26),
       spotsRemaining: 8,
-      city: "Atlanta, GA",
+      golf_course: {
+        name: "Bear's Best",
+        logo: "/images/bears-best-logo.png",
+        location: "Atlanta, GA",
+        timezone: "America/New_York",
+      },
       imageUrl: "/images/hamilton-mill-atlanta.jpg",
     },
     {
@@ -24,7 +34,12 @@ export const getEvents = async (): Promise<Event[]> => {
       title: "Cobblestone",
       date: new Date(2025, 7, 2),
       spotsRemaining: 5,
-      city: "Atlanta, GA",
+      golf_course: {
+        name: "Bear's Best",
+        logo: "/images/bears-best-logo.png",
+        location: "Atlanta, GA",
+        timezone: "America/New_York",
+      },
       imageUrl: "/images/cobblestone-atlanta.jpg",
     },
   ];

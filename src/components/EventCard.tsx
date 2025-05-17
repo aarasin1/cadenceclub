@@ -24,7 +24,7 @@ const EventCard: React.FC<EventCardProps> = ({ event }) => {
             {formatDate(event.date)}
           </p>
           <p className="pl-6 relative before:content-['📍'] before:absolute before:left-0">
-            {event.city}
+            {event.golf_course.location}
           </p>
           <p className="pl-6 relative before:content-['⛳'] before:absolute before:left-0">
             Spots Remaining: {event.spotsRemaining}
