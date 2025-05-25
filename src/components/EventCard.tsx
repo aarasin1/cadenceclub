@@ -1,5 +1,5 @@
 import React from "react";
-import type { Event } from "../models/Event";
+import { Event } from "../models/Event";
 import { formatDate } from "../utils/formatDate";
 
 interface EventCardProps {
@@ -32,7 +32,7 @@ const EventCard: React.FC<EventCardProps> = ({ event }) => {
         </div>
 
         {/* CTA Button */}
-        <button className="mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
+        <button className="mt-4 bg-slateblue text-white px-4 py-2 rounded-lg hover:bg-beige transition">
           Register Now
         </button>
       </div>

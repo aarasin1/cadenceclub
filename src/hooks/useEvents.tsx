@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import type { Event } from "../models/Event";
+import { Event } from "../models/Event";
 import { getEvents } from "../services/EventService";
 
 export const useEvents = () => {

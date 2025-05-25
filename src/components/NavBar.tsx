@@ -8,17 +8,17 @@ const Navbar: React.FC = () => {
       <div className="space-x-4 mr-2">
         <button
           onClick={() => nav("/")}
-          className="text-bone font-medium font-serif hover:text-white"
+          className="text-bone font-medium font-serif hover:text-white hover:cursor-pointer"
         >
           Home
         </button>
         <button
           onClick={() => nav("/events")}
-          className="text-bone font-medium font-serif hover:text-white"
+          className="text-bone font-medium font-serif hover:text-white hover:cursor-pointer"
         >
           Events
         </button>
-        <button className="text-bone font-medium font-serif hover:text-white">
+        <button className="text-bone font-medium font-serif hover:text-white hover:cursor-pointer">
           About
         </button>
       </div>
