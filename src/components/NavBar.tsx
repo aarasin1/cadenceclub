@@ -34,19 +34,19 @@ const Navbar: React.FC = () => {
       <div className="flex flex-shrink-0 space-x-4">
         <button
           onClick={() => nav("/")}
-          className="text-bone text-sm sm:text-base font-medium font-serif hover:text-white"
+          className="text-bone text-sm sm:text-base font-medium font-serif hover:text-beige"
         >
           Home
         </button>
         <button
           onClick={() => nav("/events")}
-          className="text-bone text-sm sm:text-base font-medium font-serif hover:text-white"
+          className="text-bone text-sm sm:text-base font-medium font-serif hover:text-beige"
         >
           Events
         </button>
         <button
           onClick={() => nav("/about")}
-          className="text-bone text-sm sm:text-base font-medium font-serif hover:text-white"
+          className="text-bone text-sm sm:text-base font-medium font-serif hover:text-beige"
         >
           About
         </button>
