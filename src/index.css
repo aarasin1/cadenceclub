@@ -10,8 +10,9 @@
 
 }
 
-/* navy: "#0A1A2F",
-gold: "#C9AA71",
-charcoal: "#3A3A3A",
-slateblue: "#43536D",
-beige: "#D8CAB8", */
+/* in your index.css or global.css */
+html,
+body {
+  margin: 0;
+  padding: 0;
+}

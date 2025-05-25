@@ -1,29 +1,34 @@
-import React from "react"; // adjust path based on your actual logo
+import React from "react";
 
 const Hero: React.FC = () => {
   return (
-    <section className="flex flex-col items-center justify-start h-[57vh] bg-bone text-center px-4 text-navy">
-      {/* Logo */}
-      <img
-        src={"/images/cadence-club.png"}
-        alt="Cadence Club logo"
-        className="w-24 h-auto mb-2 self-start ml-8"
-      />
+    <section
+      className="
+        relative 
+        w-screen          /* span the full viewport width */
+        flex items-center justify-center 
+        text-center text-bone
+        bg-[url('/images/test-hero.png')] bg-cover bg-center
+        min-h-[60vh] sm:min-h-[70vh] lg:min-h-[70vh]
+      "
+    >
+      {/* dark overlay for contrast */}
+      <div className="absolute inset-0 bg-black/50" />
 
-      {/* Headline */}
-      <h1 className="text-5xl font-serif font-bold mb-10">
-        Welcome to Cadence Club
-      </h1>
+      {/* content */}
+      <div className="relative z-10 w-full max-w-5xl px-4 py-20 sm:py-32 md:py-40">
+        <h1 className="mx-auto max-w-2xl text-3xl sm:text-4xl md:text-5xl font-serif font-bold mb-4">
+          Welcome to Cadence Club
+        </h1>
 
-      {/* Subtext */}
-      <p className="text-xl font-serif mb-10">
-        Golf With No Waiting, Guaranteed.
-      </p>
+        <p className="mx-auto max-w-xl text-lg sm:text-xl md:text-2xl font-serif mb-8">
+          Golf With No Waiting, Guaranteed.
+        </p>
 
-      {/* CTA Button */}
-      <button className="bg-navy text-bone px-6 py-2 rounded-lg hover:bg-navy transition">
-        Join Now
-      </button>
+        <button className="inline-block bg-navy text-bone px-6 py-3 rounded-lg text-sm sm:text-base md:text-lg hover:bg-navy/90 transition">
+          Join Now
+        </button>
+      </div>
     </section>
   );
 };
