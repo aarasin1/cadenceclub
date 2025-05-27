@@ -1,26 +1,29 @@
+// src/components/EventCarousel.tsx
 import React, { useState } from "react";
 import EventCard from "./EventCard";
 import { useEvents } from "../hooks/useEvents";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 
 const EventCarousel: React.FC = () => {
-  const { events, loading } = useEvents();
+  const { data: events, isLoading, isError, error } = useEvents();
   const [index, setIndex] = useState(0);
+
+  if (isLoading) {
+    return <p className="text-center py-10">Loading events…</p>;
+  }
+  if (isError) {
+    return (
+      <p className="text-center py-10 text-red-600">
+        Error loading events: {error.message}
+      </p>
+    );
+  }
+  if (!events || events.length === 0) {
+    return <p className="text-center py-10">No events found.</p>;
+  }
 
   const isFirst = index === 0;
   const isLast = index === events.length - 1;
-
-  const next = () => {
-    if (!isLast) setIndex(index + 1);
-  };
-
-  const prev = () => {
-    if (!isFirst) setIndex(index - 1);
-  };
-
-  if (loading) {
-    return <p className="text-center py-10">Loading events...</p>;
-  }
 
   return (
     <section className="my-10 px-4 text-center">
@@ -28,10 +31,10 @@ const EventCarousel: React.FC = () => {
 
       <div className="relative flex justify-center items-center">
         <div className="relative w-full max-w-md">
-          {/* Left Arrow — hidden if at first */}
+          {/* Left Arrow */}
           {!isFirst && (
             <button
-              onClick={prev}
+              onClick={() => setIndex((i) => i - 1)}
               className="absolute left-[-2.75rem] top-1/2 -translate-y-1/2 bg-white shadow-md rounded-full p-2 hover:bg-gray-100 z-10"
             >
               <FaChevronLeft className="text-xl" />
@@ -41,10 +44,10 @@ const EventCarousel: React.FC = () => {
           {/* Event Card */}
           <EventCard event={events[index]} />
 
-          {/* Right Arrow — hidden if at last */}
+          {/* Right Arrow */}
           {!isLast && (
             <button
-              onClick={next}
+              onClick={() => setIndex((i) => i + 1)}
               className="absolute right-[-2.75rem] top-1/2 -translate-y-1/2 bg-white shadow-md rounded-full p-2 hover:bg-gray-100 z-10"
             >
               <FaChevronRight className="text-xl" />
