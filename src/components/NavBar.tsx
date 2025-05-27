@@ -1,20 +1,18 @@
+// src/components/Navbar.tsx
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 const Navbar: React.FC = () => {
   const nav = useNavigate();
+
   return (
     <nav
       className="
         w-screen flex items-center justify-between
         bg-navy shadow-md overflow-x-auto
-
-        /* heavier padding: 1.5rem (px-6) on mobile, scaling up */
-        px-8 sm:px-8 md:px-14
-        py-2
+        px-6 sm:px-8 md:px-10 py-2
       "
       style={{
-        /* preserve safe‑area + our custom padding */
         paddingLeft: "calc(2.0rem + env(safe-area-inset-left))",
         paddingRight: "calc(2.0rem + env(safe-area-inset-right))",
       }}
@@ -38,17 +36,12 @@ const Navbar: React.FC = () => {
         >
           Home
         </button>
+
         <button
           onClick={() => nav("/events")}
           className="text-bone text-sm sm:text-base font-medium font-serif hover:text-beige"
         >
           Events
-        </button>
-        <button
-          onClick={() => nav("/about")}
-          className="text-bone text-sm sm:text-base font-medium font-serif hover:text-beige"
-        >
-          About
         </button>
       </div>
     </nav>

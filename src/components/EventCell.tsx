@@ -30,7 +30,7 @@ const EventCell: React.FC<EventCellProps> = ({ event }) => {
       <div className="flex-1">
         <h2 className="text-xl font-bold text-navy">{event.title}</h2>
         <p className="text-gray-600 text-md">
-          {event.golf_course.location} <span className="mx-2">|</span>{" "}
+          {event.imageUrl} <span className="mx-2">|</span>{" "}
           {formatDate(event.date)}
         </p>
       </div>

@@ -8,11 +8,11 @@ const EventDetailsSection: React.FC<{ event: Event }> = ({ event }) => (
       <img
         src={event.golf_course.logo}
         alt={`${event.golf_course.name} logo`}
-        className="w-20 h-20 object-cover rounded-full"
+        className="w-20 h-20 object-contain p-1 rounded-full"
       />
       <div className="text-gray-700">
         <p className="text-lg font-semibold">{event.golf_course.location}</p>
-        <p>{formatDate(event.date)}</p>
+        <p className="text-sm">{formatDate(event.date)}</p>
       </div>
     </div>
   </div>
