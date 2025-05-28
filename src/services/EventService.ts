@@ -14,6 +14,7 @@ import { app } from "../firebaseConfig.ts";
 import { Event } from "../models/Event";
 import type { GolfCourse } from "../models/GolfCourse";
 import type { TeeTime, bookedMembersDictionary } from "../models/TeeTime";
+import type { MemberID } from "../models/Member.ts";
 
 const db = getFirestore(app);
 
@@ -43,7 +44,7 @@ export const getEvents = async (): Promise<Event[]> => {
       const rawDate = data.date as Timestamp;
       const rawTeeTimes = data.teeTimes as Array<{
         time: Timestamp;
-        bookedMembers: bookedMembersDictionary[];
+        bookedMembers: MemberID[];
       }>;
 
       // fetch the golf course doc
@@ -65,6 +66,7 @@ export const getEvents = async (): Promise<Event[]> => {
         title: data.title as string,
         date: rawDate.toDate(),
         golfCourseId,
+        allBookedMembers: data.allBookedMembers as string[],
         golf_course: {
           name: courseData.name,
           logo: courseData.logo,

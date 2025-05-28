@@ -8,6 +8,7 @@ export class Event {
   golf_course: GolfCourse;
   teeTimes: TeeTime[];
   golfCourseId: string;
+  allBookedMembers: string[] = [];
 
   constructor(data: {
     id: string;
@@ -16,6 +17,7 @@ export class Event {
     golf_course: GolfCourse;
     teeTimes: TeeTime[];
     golfCourseId: string;
+    allBookedMembers: string[];
   }) {
     this.id = data.id;
     this.title = data.title;
@@ -23,14 +25,13 @@ export class Event {
     this.golf_course = data.golf_course;
     this.teeTimes = data.teeTimes;
     this.golfCourseId = data.golfCourseId;
+    this.allBookedMembers = data.allBookedMembers;
   }
 
   get spotsRemaining(): number {
-    const totalSpots = this.teeTimes.length * 4;
-    const bookedSpots = this.teeTimes.reduce(
-      (sum, teeTime) => sum + teeTime.bookedMembers.length,
-      0
-    );
+    const MAX_PER_SLOT = 4;
+    const totalSpots = this.teeTimes.length * MAX_PER_SLOT;
+    const bookedSpots = this.allBookedMembers.length;
     return totalSpots - bookedSpots;
   }
 }
