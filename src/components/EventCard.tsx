@@ -1,4 +1,6 @@
+// src/components/EventCard.tsx
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import { Event } from "../models/Event";
 import { formatDate } from "../utils/formatDate";
 
@@ -7,10 +9,16 @@ interface EventCardProps {
 }
 
 const EventCard: React.FC<EventCardProps> = ({ event }) => {
+  const navigate = useNavigate();
+
+  const handleRegister = () => {
+    navigate(`/events/${event.id}`);
+  };
+
   return (
     <div className="bg-white shadow-lg rounded-xl overflow-hidden max-w-md mx-auto text-center">
       <img
-        src={event.imageUrl}
+        src={event.golf_course.imageUrl}
         alt={event.title}
         className="w-full h-48 object-cover"
       />
@@ -24,7 +32,7 @@ const EventCard: React.FC<EventCardProps> = ({ event }) => {
             {formatDate(event.date)}
           </p>
           <p className="pl-6 relative before:content-['📍'] before:absolute before:left-0">
-            {event.golf_course.location}
+            {event.golf_course.generalLocation}
           </p>
           <p className="pl-6 relative before:content-['⛳'] before:absolute before:left-0">
             Spots Remaining: {event.spotsRemaining}
@@ -32,7 +40,10 @@ const EventCard: React.FC<EventCardProps> = ({ event }) => {
         </div>
 
         {/* CTA Button */}
-        <button className="mt-4 bg-slateblue text-white px-4 py-2 rounded-lg hover:bg-beige transition">
+        <button
+          onClick={handleRegister}
+          className="mt-4 bg-slateblue text-white px-4 py-2 rounded-lg hover:bg-beige transition"
+        >
           Register Now
         </button>
       </div>

@@ -1,109 +1,82 @@
+// src/services/EventService.ts
+import {
+  getFirestore,
+  collection,
+  doc as docRef,
+  getDocs,
+  getDoc,
+  query,
+  where,
+  orderBy,
+  Timestamp,
+} from "firebase/firestore";
+import { app } from "../firebaseConfig.ts";
 import { Event } from "../models/Event";
+import type { GolfCourse } from "../models/GolfCourse";
+import type { TeeTime, bookedMembersDictionary } from "../models/TeeTime";
+
+const db = getFirestore(app);
 
 export const getEvents = async (): Promise<Event[]> => {
-  // Eventually replace this with a real API call
-  return [
-    new Event({
-      id: "1",
-      title: "Bear's Best",
-      date: new Date(2025, 6, 12),
-      golf_course: {
-        name: "Bear's Best",
-        logo: "/images/bears-best-logo.png",
-        location: "Atlanta, GA",
-        timezone: "America/New_York",
-      },
-      teeTimes: [
-        {
-          time: new Date(2025, 6, 12, 7, 0),
-          booked: [
-            { name: "John Doe", id: "1", email: "exanple@gmail.com" },
-            { name: "Jane Doe", id: "2", email: "example@yahoo.com" },
-          ],
+  // 1) compute cutoff = now + 6h
+  const now = new Date();
+  const cutoff = new Date(now.getTime() - 6 * 60 * 60 * 1_000);
+
+  // 2) build our query
+  const eventsCol = collection(db, "events");
+  const eventsQuery = query(
+    eventsCol,
+    where("date", ">=", Timestamp.fromDate(cutoff)),
+    orderBy("date", "asc")
+  );
+
+  // 3) fetch matching events
+  const snap = await getDocs(eventsQuery);
+
+  // 4) for each event, fetch its golf‑course and build an Event instance
+  const events = await Promise.all(
+    snap.docs.map(async (d) => {
+      const data = d.data();
+      console.log(data);
+      // pull out the raw fields
+      const golfCourseId = data.golfCourseId as string;
+      const rawDate = data.date as Timestamp;
+      const rawTeeTimes = data.teeTimes as Array<{
+        time: Timestamp;
+        bookedMembers: bookedMembersDictionary[];
+      }>;
+
+      // fetch the golf course doc
+      const courseSnap = await getDoc(docRef(db, "golfCourses", golfCourseId));
+      if (!courseSnap.exists()) {
+        throw new Error(`GolfCourse ${golfCourseId} not found`);
+      }
+      const courseData = courseSnap.data() as GolfCourse;
+
+      // convert teeTimes → TeeTime[]
+      const teeTimes: TeeTime[] = rawTeeTimes.map((tt) => ({
+        time: tt.time.toDate(),
+        bookedMembers: tt.bookedMembers,
+      }));
+
+      // instantiate your Event model
+      return new Event({
+        id: d.id,
+        title: data.title as string,
+        date: rawDate.toDate(),
+        golfCourseId,
+        golf_course: {
+          name: courseData.name,
+          logo: courseData.logo,
+          imageUrl: courseData.imageUrl,
+          generalLocation: courseData.generalLocation,
+          timezone: courseData.timezone,
+          address: courseData.address,
         },
-        { time: new Date(2025, 6, 12, 7, 10), booked: [] },
-        {
-          time: new Date(2025, 6, 12, 7, 20),
-          booked: [
-            { name: "Phil Mickelson", id: "3", email: "Phil@gmail.com" },
-          ],
-        },
-        {
-          time: new Date(2025, 6, 12, 7, 30),
-          booked: [{ name: "Tiger Woods", id: "4", email: "Tiger@gmail.com" }],
-        },
-      ],
-      imageUrl: "/images/bears-best-atlanta.jpeg",
-    }),
-    new Event({
-      id: "2",
-      title: "Hamilton Mill",
-      date: new Date(2025, 6, 26),
-      golf_course: {
-        name: "Bear's Best",
-        logo: "/images/bears-best-logo.png",
-        location: "Atlanta, GA",
-        timezone: "America/New_York",
-      },
-      teeTimes: [
-        {
-          time: new Date(2025, 6, 26, 7, 0),
-          booked: [],
-        },
-        {
-          time: new Date(2025, 6, 26, 7, 10),
-          booked: [
-            { name: "Rickie Fowler", id: "5", email: "rickie@example.com" },
-          ],
-        },
-        {
-          time: new Date(2025, 6, 26, 7, 20),
-          booked: [
-            { name: "Annika Sörenstam", id: "6", email: "annika@pro.com" },
-            { name: "Nancy Lopez", id: "7", email: "nancy@lpga.com" },
-          ],
-        },
-        {
-          time: new Date(2025, 6, 26, 7, 30),
-          booked: [],
-        },
-      ],
-      imageUrl: "/images/hamilton-mill-atlanta.jpg",
-    }),
-    new Event({
-      id: "3",
-      title: "Cobblestone",
-      date: new Date(2025, 7, 2),
-      golf_course: {
-        name: "Bear's Best",
-        logo: "/images/bears-best-logo.png",
-        location: "Atlanta, GA",
-        timezone: "America/New_York",
-      },
-      teeTimes: [
-        {
-          time: new Date(2025, 7, 2, 6, 50),
-          booked: [],
-        },
-        {
-          time: new Date(2025, 7, 2, 7, 0),
-          booked: [{ name: "Jordan Spieth", id: "8", email: "jordan@pga.com" }],
-        },
-        {
-          time: new Date(2025, 7, 2, 7, 10),
-          booked: [
-            { name: "Michelle Wie", id: "9", email: "michelle@lpga.com" },
-          ],
-        },
-        {
-          time: new Date(2025, 7, 2, 7, 20),
-          booked: [
-            { name: "Collin Morikawa", id: "10", email: "collin@pga.com" },
-            { name: "Lexi Thompson", id: "11", email: "lexi@lpga.com" },
-          ],
-        },
-      ],
-      imageUrl: "/images/cobblestone-atlanta.jpg",
-    }),
-  ];
+        teeTimes,
+      });
+    })
+  );
+
+  return events;
 };

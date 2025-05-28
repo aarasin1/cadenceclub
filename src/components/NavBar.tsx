@@ -1,6 +1,6 @@
 // src/components/Navbar.tsx
 import React from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const Navbar: React.FC = () => {
   const nav = useNavigate();
@@ -26,22 +26,22 @@ const Navbar: React.FC = () => {
           w-10 sm:w-12 md:w-16
           filter invert brightness-0
         "
+        onClick={() => nav("/")}
       />
 
       {/* Links */}
       <div className="flex flex-shrink-0 space-x-4">
         <button
-          onClick={() => nav("/")}
-          className="text-bone text-sm sm:text-base font-medium font-serif hover:text-beige"
-        >
-          Home
-        </button>
-
-        <button
           onClick={() => nav("/events")}
           className="text-bone text-sm sm:text-base font-medium font-serif hover:text-beige"
         >
           Events
+        </button>
+        <button
+          onClick={() => nav("/")}
+          className="text-bone text-sm sm:text-base font-medium font-serif hover:text-beige"
+        >
+          Login
         </button>
       </div>
     </nav>

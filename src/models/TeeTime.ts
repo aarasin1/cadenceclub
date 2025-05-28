@@ -1,6 +1,10 @@
-import type { Member } from "./Member.ts";
+import type { MemberID } from "./Member.ts";
 
 export interface TeeTime {
   time: Date;
-  booked: Member[];
+  bookedMembers: bookedMembersDictionary[];
+}
+
+export interface bookedMembersDictionary {
+  memberId: MemberID;
 }

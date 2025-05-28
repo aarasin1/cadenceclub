@@ -3,3 +3,5 @@ export interface Member {
   name: string;
   email: string;
 }
+
+export type MemberID = Member["id"];

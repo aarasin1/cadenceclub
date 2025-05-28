@@ -11,7 +11,9 @@ const EventDetailsSection: React.FC<{ event: Event }> = ({ event }) => (
         className="w-20 h-20 object-contain p-1 rounded-full"
       />
       <div className="text-gray-700">
-        <p className="text-lg font-semibold">{event.golf_course.location}</p>
+        <p className="text-lg font-semibold">
+          {event.golf_course.generalLocation}
+        </p>
         <p className="text-sm">{formatDate(event.date)}</p>
       </div>
     </div>

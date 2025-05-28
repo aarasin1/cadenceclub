@@ -15,7 +15,7 @@ const TeeTimesSection: React.FC<Props> = ({ teeTimes, loading, timezone }) => {
   return (
     <div className="space-y-4">
       {teeTimes.map((teeTime) => {
-        const remaining = 4 - teeTime.booked.length;
+        const remaining = 4 - teeTime.bookedMembers.length;
 
         return (
           <button
