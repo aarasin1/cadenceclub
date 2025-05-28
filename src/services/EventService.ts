@@ -38,7 +38,6 @@ export const getEvents = async (): Promise<Event[]> => {
   const events = await Promise.all(
     snap.docs.map(async (d) => {
       const data = d.data();
-      console.log(data);
       // pull out the raw fields
       const golfCourseId = data.golfCourseId as string;
       const rawDate = data.date as Timestamp;
