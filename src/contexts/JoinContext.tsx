@@ -2,13 +2,17 @@ import React, { createContext, useContext, useState } from "react";
 import type { ReactNode } from "react";
 
 export interface JoinData {
+  // required
   email: string;
   password: string;
   firstName: string;
   lastName: string;
   phone: string;
-  address?: string;
+  homeState: string;
+
+  // optional
   handicap?: string;
+  homeCourse?: string;
   preferredPace?: string;
 }
 
@@ -18,6 +22,7 @@ interface JoinContextType {
   step: number;
   next: () => void;
   back: () => void;
+  reset: () => void;
 }
 
 const defaultData: JoinData = {
@@ -26,6 +31,8 @@ const defaultData: JoinData = {
   firstName: "",
   lastName: "",
   phone: "",
+  homeState: "",
+  // the optionals can start undefined
 };
 
 const JoinContext = createContext<JoinContextType | undefined>(undefined);
@@ -47,9 +54,13 @@ export const JoinProvider: React.FC<{ children: ReactNode }> = ({
 
   const next = () => setStep((s) => Math.min(4, s + 1));
   const back = () => setStep((s) => Math.max(1, s - 1));
+  const reset = () => {
+    setData(defaultData);
+    setStep(1);
+  };
 
   return (
-    <JoinContext.Provider value={{ data, setField, step, next, back }}>
+    <JoinContext.Provider value={{ data, setField, step, next, back, reset }}>
       {children}
     </JoinContext.Provider>
   );

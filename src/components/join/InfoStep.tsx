@@ -24,10 +24,15 @@ const InfoStep: React.FC<InfoStepProps> = ({ onContinue }) => (
       </h2>
       <p className="text-gray-700">
         Cadence Club brings together golfers who love to play fast and hate to
-        wait on other groups! We pre‑book exclusive tee blocks at rotating
-        public courses and have staff on-site to monitor pace and facilitate
-        play‑throughs. Enjoy golf without waiting and a pace of 3.5 hours or
-        less!
+        wait on other groups! Pay an annual membership fee and get access to our
+        3.5 hour pace of play events!
+      </p>
+      <p className="text-gray-700">
+        We host play during blocks of weekend morning tee times at rotating
+        public golf courses. This ensures our members are the only ones on the
+        course when they tee off. Cadence Club has staff on-site to monitor pace
+        and facilitate play‑throughs. Enjoy golf without waiting, and a pace of
+        3.5 hours or less!
       </p>
     </section>
 
@@ -36,6 +41,18 @@ const InfoStep: React.FC<InfoStepProps> = ({ onContinue }) => (
       <h2 className="text-2xl font-semibold text-navy">
         Policies You Need to Know
       </h2>
+      <p className="text-sm text-gray-500">
+        For our full rules,{" "}
+        <a
+          href="/images/Rules-Sheet.pdf"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-navy hover:underline"
+        >
+          click here
+        </a>
+        .
+      </p>
       <ul className="list-disc list-inside space-y-2 text-gray-700 ml-4">
         <li>
           <strong>Cancellation:</strong> You must cancel at least{" "}
