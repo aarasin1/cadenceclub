@@ -1,6 +1,8 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 
 const Hero: React.FC = () => {
+  const nav = useNavigate();
   return (
     <section
       className="
@@ -25,7 +27,12 @@ const Hero: React.FC = () => {
           Golf With No Waiting, Guaranteed.
         </p>
 
-        <button className="inline-block bg-navy text-bone px-6 py-3 rounded-lg text-sm sm:text-base md:text-lg hover:bg-navy/90 transition">
+        <button
+          onClick={() => {
+            nav("/join");
+          }}
+          className="inline-block bg-navy text-bone px-6 py-3 rounded-lg text-sm sm:text-base md:text-lg hover:bg-navy/90 transition"
+        >
           Join Now
         </button>
       </div>

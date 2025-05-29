@@ -4,6 +4,7 @@ import EventsListPage from "./pages/EventsListPage";
 import EventDetailPage from "./pages/EventDetailPage";
 import Login from "./pages/Login";
 import { Routes, Route } from "react-router-dom";
+import JoinPage from "./pages/JoinPage";
 
 const App: React.FC = () => {
   return (
@@ -23,6 +24,10 @@ const App: React.FC = () => {
       <Route
         path="/login"
         element={<Login />}
+      />
+      <Route
+        path="/join"
+        element={<JoinPage />}
       />
     </Routes>
   );
