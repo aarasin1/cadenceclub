@@ -19,19 +19,24 @@ const RegistrationWizardInner: React.FC = () => {
   const { step, next, back, reset } = useJoin();
   const { Component: StepComponent } = steps[step - 1];
 
+  // Advance or finish
   const handleNext = () => {
-    // If we're on the Account & Profile step (step 2), validate the form
+    // validate form on account/profile step
     if (step === 2) {
       const form = document.getElementById("account-form") as HTMLFormElement;
-      if (form && !form.reportValidity()) {
-        // reportValidity() will show native browser errors
-        return; // don't advance
-      }
+      if (form && !form.reportValidity()) return;
     }
-    // otherwise just go to next step
+
+    // if this is the last step, assume payment succeeded and exit
+    if (step === steps.length) {
+      navigate("/"); // or wherever you want to take them
+      return;
+    }
+
     next();
   };
 
+  // Cancel out of the flow
   const handleCancel = () => {
     if (
       window.confirm(
@@ -45,11 +50,12 @@ const RegistrationWizardInner: React.FC = () => {
 
   return (
     <div className="relative max-w-xl mx-auto p-6">
-      {/* Top bar with back, indicator, next, and cancel */}
+      {/* Top bar */}
       <div
         className="grid items-center mb-6"
         style={{ gridTemplateColumns: "auto 1fr auto" }}
       >
+        {/* Back arrow */}
         <div className="flex justify-start">
           {step > 1 && (
             <button
@@ -62,11 +68,14 @@ const RegistrationWizardInner: React.FC = () => {
           )}
         </div>
 
+        {/* Step indicator */}
         <div className="flex justify-center text-sm text-gray-600 whitespace-nowrap">
           Step {step} of {steps.length}: {steps[step - 1].title}
         </div>
 
+        {/* Next arrow & cancel */}
         <div className="flex justify-end items-center space-x-2">
+          {/* Only show next arrow when not on last step */}
           {step < steps.length && (
             <button
               onClick={handleNext}
@@ -99,13 +108,17 @@ const RegistrationWizardInner: React.FC = () => {
           <ArrowLeft className="w-4 h-4 text-gray-600" />
           <span>Back</span>
         </button>
-        <button
-          onClick={handleNext}
-          className="flex items-center gap-x-1 px-4 py-2 bg-navy text-white rounded hover:bg-beige transition"
-        >
-          <span>{step === steps.length ? "Finish" : "Next"}</span>
-          <ArrowRight className="w-4 h-4 text-white" />
-        </button>
+
+        {/* Only show Next on non-final steps */}
+        {step < steps.length && (
+          <button
+            onClick={handleNext}
+            className="flex items-center gap-x-1 px-4 py-2 bg-navy text-white rounded hover:bg-beige transition"
+          >
+            <span>Next</span>
+            <ArrowRight className="w-4 h-4 text-white" />
+          </button>
+        )}
       </div>
     </div>
   );
