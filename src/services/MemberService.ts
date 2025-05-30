@@ -1,5 +1,5 @@
 // src/services/MemberService.ts
-import { getFirestore, doc, getDoc } from "firebase/firestore";
+import { getFirestore, doc, getDoc, setDoc } from "firebase/firestore";
 import { app } from "../firebaseConfig";
 import type { Member } from "../models/Member";
 
@@ -10,5 +10,9 @@ export const MemberService = {
     const snap = await getDoc(doc(db, "Members", uid));
     if (!snap.exists()) throw new Error("Member not found");
     return snap.data() as Member;
+  },
+
+  async createMember(member: Member): Promise<void> {
+    await setDoc(doc(db, "Members", member.id), member);
   },
 };

@@ -6,10 +6,12 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "lint": "eslint .",
+    "lint": "eslint functions src --ignore-pattern node_modules/**",
     "preview": "vite preview"
   },
   "dependencies": {
+    "@stripe/react-stripe-js": "^3.7.0",
+    "@stripe/stripe-js": "^7.3.1",
     "@tailwindcss/vite": "^4.1.7",
     "@tanstack/react-query": "^5.77.2",
     "firebase": "^11.8.1",
