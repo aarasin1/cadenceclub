@@ -2,84 +2,103 @@
 import React, { useState, useEffect } from "react";
 import { useJoin } from "../../contexts/JoinContext";
 import { useCreatePaymentIntent } from "../../hooks/useCreatePaymentIntent";
+import { useAddPaymentMutation } from "../../hooks/useAddPaymentMutation";
 import { useStripe, useElements, CardElement } from "@stripe/react-stripe-js";
-import { AuthService } from "../../services/AuthService";
-import { MemberService } from "../../services/MemberService";
+import { useAuth } from "../../contexts/AuthContext";
 
 const PaymentStep: React.FC<{ onContinue: () => void }> = ({ onContinue }) => {
   const { data } = useJoin();
   const stripe = useStripe();
   const elements = useElements();
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
+  const [localError, setLocalError] = useState<string | null>(null);
 
-  const membershipFee = 199; // dollars
+  const membershipFee = 199;
   const amountCents = membershipFee * 100;
+  const { user } = useAuth();
+  const memberId = user?.uid!;
 
-  const { mutateAsync: createPaymentIntent, status: intentStatus } =
-    useCreatePaymentIntent();
+  // Stripe intent mutation
+  const {
+    mutateAsync: createIntent,
+    status: intentStatus,
+    error: intentError,
+  } = useCreatePaymentIntent();
 
-  // on mount, fetch a PaymentIntent client secret
+  // Firestore payment‑record mutation
+  const {
+    mutateAsync: addPaymentRecord,
+    status: recordStatus,
+    error: recordError,
+  } = useAddPaymentMutation();
+
+  // Fetch the client_secret on mount
   useEffect(() => {
-    createPaymentIntent({ amountCents })
-      .then((resp) => setClientSecret(resp.client_secret))
-      .catch((err) => setErrorMessage(err.message));
-  }, [createPaymentIntent, amountCents]);
+    createIntent({ amountCents })
+      .then((res) => setClientSecret(res.client_secret))
+      .catch(() => {
+        /* intentError will be rendered below */
+      });
+  }, [createIntent, amountCents]);
+
+  const isCreatingIntent = intentStatus === "pending";
+  const isRecordingPayment = recordStatus === "pending";
+  const isProcessing = isCreatingIntent || isRecordingPayment;
+
+  // Consolidate errors
+  const errorMessage =
+    localError || intentError?.message || recordError?.message || null;
 
   const handlePay = async () => {
-    setErrorMessage(null);
+    setLocalError(null);
 
     if (!stripe || !elements) {
-      setErrorMessage("Stripe has not loaded yet.");
+      setLocalError("Stripe.js has not loaded yet.");
       return;
     }
     if (!clientSecret) {
-      setErrorMessage("Unable to initialize payment.");
+      setLocalError("Payment intent not initialized.");
       return;
     }
 
-    const cardElement = elements.getElement(CardElement);
-    if (!cardElement) {
-      setErrorMessage("Card element not found.");
+    const card = elements.getElement(CardElement);
+    if (!card) {
+      setLocalError("Card element not found.");
       return;
     }
 
-    // confirm the payment
-    const { error, paymentIntent } = await stripe.confirmCardPayment(
-      clientSecret,
-      { payment_method: { card: cardElement } }
-    );
-    if (error) {
-      setErrorMessage(error.message || "Payment failed.");
+    // 1) Confirm the Stripe payment
+    const { error: stripeError, paymentIntent } =
+      await stripe.confirmCardPayment(clientSecret, {
+        payment_method: { card },
+      });
+
+    if (stripeError) {
+      setLocalError(stripeError.message ?? "Payment failed");
       return;
     }
     if (paymentIntent?.status !== "succeeded") {
-      setErrorMessage("Payment did not succeed.");
+      setLocalError("Payment did not succeed.");
       return;
     }
 
-    // create user & member record
+    // 2) Record the payment in Firestore
     try {
-      const user = await AuthService.signUp(data.email, data.password);
-      await MemberService.createMember({
-        uid: user.uid,
-        firstName: data.firstName,
-        lastName: data.lastName,
-        email: data.email,
-        phone: data.phone,
-        homeState: data.homeState,
-        handicap: data.handicap,
-        homeCourse: data.homeCourse,
-        preferredPace: data.preferredPace,
+      await addPaymentRecord({
+        memberId,
+        payment: {
+          amount: membershipFee,
+          paymentDate: new Date(),
+          membershipYear: new Date().getFullYear(),
+          transactionId: paymentIntent.id,
+        },
       });
+      // 3) On success, advance the wizard
       onContinue();
-    } catch (err: any) {
-      setErrorMessage(err.message);
+    } catch {
+      // recordError will appear via errorMessage
     }
   };
-
-  const loading =
-    intentStatus === "pending" || !clientSecret || !stripe || !elements;
 
   return (
     <div className="space-y-7">
@@ -91,32 +110,12 @@ const PaymentStep: React.FC<{ onContinue: () => void }> = ({ onContinue }) => {
         </p>
       </div>
 
-      {/* Benefits Card */}
+      {/* Payment Form */}
       <div className="bg-white rounded-2xl shadow p-6 text-center space-y-6">
-        {/* Logo */}
-        <img
-          src="/images/cadence-club.png"
-          alt="Cadence Club Logo"
-          className="mx-auto mb-3 w-30 h-auto"
-        />
-
-        <h3 className="text-lg font-semibold text-navy">
-          Cadence Club Membership — 2025
-        </h3>
-
-        <ul className="inline-block text-left list-disc list-inside space-y-2 text-gray-700">
-          <li>Access to all events through 12/31/2025</li>
-          <li>3.5 hour rounds at rotating public courses</li>
-          <li>No more waiting behind slow groups</li>
-          <li>On‑site staff to ensure fast play</li>
-          <li>Community of like‑minded fast golfers</li>
-        </ul>
-
         <p className="text-gray-800 font-medium">
           Membership fee: <span className="text-xl">${membershipFee}</span>
         </p>
 
-        {/* Stripe Card Entry */}
         <div className="w-full max-w-md mx-auto p-4 border rounded">
           <CardElement
             options={{
@@ -128,13 +127,17 @@ const PaymentStep: React.FC<{ onContinue: () => void }> = ({ onContinue }) => {
           />
         </div>
 
-        {/* Pay button moved inside card */}
         <button
           onClick={handlePay}
-          disabled={loading}
-          className="mt-2 w-85 px-6 py-3 bg-navy text-bone font-medium rounded hover:bg-opacity-90 transition disabled:opacity-50"
+          disabled={isProcessing}
+          className={`
+            mt-2 w-full px-6 py-3
+            bg-navy text-bone font-medium rounded
+            hover:bg-opacity-90 transition
+            ${isProcessing ? "opacity-50 cursor-not-allowed" : ""}
+          `}
         >
-          {loading ? "Processing…" : "Pay & Finish Registration"}
+          {isProcessing ? "Processing…" : "Pay & Finish Registration"}
         </button>
 
         {errorMessage && (

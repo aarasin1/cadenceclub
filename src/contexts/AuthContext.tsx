@@ -1,19 +1,33 @@
 // src/contexts/AuthContext.tsx
-import React, { createContext, useContext, useEffect, useState } from "react";
-import type { ReactNode } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import React, {
+  createContext,
+  useContext, // ← add this
+  useEffect,
+  useState,
+  ReactNode,
+} from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { User } from "firebase/auth";
 import { AuthService } from "../services/AuthService";
 import { MemberService } from "../services/MemberService";
 import type { Member } from "../models/Member";
+import {
+  useLoginMutation,
+  useLogoutMutation,
+  useSignUpMutation,
+} from "../hooks/useAuthMutations";
 
 interface AuthContextType {
   user: User | null;
   member: Member | null;
-  authLoading: boolean;
-  memberLoading: boolean;
+  loading: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
+  signUp: (
+    email: string,
+    password: string,
+    profile: Omit<Member, "id" | "payments">
+  ) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -22,88 +36,67 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
   const qc = useQueryClient();
-
-  // track raw Firebase user
   const [user, setUser] = useState<User | null>(null);
-  const [authLoading, setAuthLoading] = useState(true);
+  const [initializing, setInitializing] = useState(true);
 
-  // subscribe to Firebase auth state
+  // 1) Listen for Firebase auth state
   useEffect(() => {
-    const unsubscribe = AuthService.onAuthStateChanged((u) => {
+    const unsubscribe = AuthService.onAuthStateChanged((u: User | null) => {
       setUser(u);
-      setAuthLoading(false);
-      // when auth state changes, invalidate member query
+      setInitializing(false);
       qc.invalidateQueries({ queryKey: ["member"] });
     });
     return unsubscribe;
   }, [qc]);
 
-  // fetch Member record for current user.uid
+  // 2) Fetch Member record when `user` exists
   const { data: member, isLoading: memberLoading } = useQuery<Member, Error>({
-    queryKey: ["member", user?.uid ?? null],
+    queryKey: ["member", user?.uid],
     queryFn: () => {
-      if (!user?.uid) throw new Error("No user UID");
-      return MemberService.getMemberByUid(user.uid);
+      if (!user) throw new Error("No authenticated user");
+      return MemberService.getMemberById(user.uid);
     },
-    enabled: Boolean(user?.uid),
-    staleTime: 1000 * 60 * 5,
+    enabled: Boolean(user),
+    staleTime: 5 * 60 * 1000,
   });
 
-  // login mutation
-  const { mutateAsync: signInMutation } = useMutation({
-    mutationFn: ({ email, password }: { email: string; password: string }) =>
-      AuthService.signIn(email, password),
-    onSuccess: () => {
-      // auth state listener will update user & invalidate member
-    },
-  });
+  // 3) Auth mutations
+  const loginMutation = useLoginMutation();
+  const logoutMutation = useLogoutMutation();
+  const signUpMutation = useSignUpMutation();
 
-  // logout mutation
-  const { mutateAsync: signOutMutation } = useMutation({
-    mutationFn: () => AuthService.signOut(),
-    onSuccess: () => {
-      // clear caches
-      qc.clear();
-    },
-  });
+  // 4) Promise‑based wrappers
+  const login = (email: string, password: string) =>
+    loginMutation.mutateAsync({ email, password });
+  const logout = () => logoutMutation.mutateAsync();
+  const signUp = (
+    email: string,
+    password: string,
+    profile: Omit<Member, "id" | "payments">
+  ) => signUpMutation.mutateAsync({ email, password, profile });
 
-  // wrapper to set loading flags
-  const login = async (email: string, password: string) => {
-    setAuthLoading(true);
-    try {
-      await signInMutation({ email, password });
-    } finally {
-      setAuthLoading(false);
-    }
-  };
-
-  const logout = async () => {
-    setAuthLoading(true);
-    try {
-      await signOutMutation();
-    } finally {
-      setAuthLoading(false);
-    }
-  };
+  // 5) Combined loading state
+  const loading =
+    initializing ||
+    memberLoading ||
+    loginMutation.isLoading ||
+    logoutMutation.isLoading ||
+    signUpMutation.isLoading;
 
   return (
     <AuthContext.Provider
-      value={{
-        user,
-        member: member ?? null,
-        authLoading,
-        memberLoading,
-        login,
-        logout,
-      }}
+      value={{ user, member: member ?? null, loading, login, logout, signUp }}
     >
       {children}
     </AuthContext.Provider>
   );
 };
 
-export const useAuth = (): AuthContextType => {
+// ✨ This was missing—export your hook here:
+export function useAuth(): AuthContextType {
   const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error("useAuth must be inside AuthProvider");
+  if (!ctx) {
+    throw new Error("useAuth must be used inside <AuthProvider>");
+  }
   return ctx;
-};
+}

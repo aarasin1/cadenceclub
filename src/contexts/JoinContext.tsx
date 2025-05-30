@@ -13,7 +13,7 @@ export interface JoinData {
   // optional
   handicap?: string;
   homeCourse?: string;
-  preferredPace?: string;
+  preferredPace?: number;
 }
 
 interface JoinContextType {

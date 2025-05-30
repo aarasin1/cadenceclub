@@ -2,20 +2,17 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
-import { useLogoutMutation } from "../hooks/useAuthMutations";
 import ConfirmationModal from "./ConfirmationModal";
 import UserIcon from "./icons/UserIcon";
 import LogoutIcon from "./icons/LogoutIcon";
 
 const Navbar: React.FC = () => {
   const nav = useNavigate();
-  const { authLoading, memberLoading, member } = useAuth();
-  const loading = authLoading || memberLoading;
-  const { mutate: logout } = useLogoutMutation();
+  const { user, member, loading, logout } = useAuth();
   const [showLogoutModal, setShowLogoutModal] = React.useState(false);
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     setShowLogoutModal(false);
     nav("/");
   };
@@ -54,7 +51,7 @@ const Navbar: React.FC = () => {
             <span className="text-bone text-sm sm:text-base font-medium font-serif">
               …
             </span>
-          ) : member ? (
+          ) : user && member ? (
             <div className="flex items-center space-x-1">
               {/* Profile link */}
               <button
@@ -75,10 +72,7 @@ const Navbar: React.FC = () => {
               {/* Logout icon */}
               <button
                 onClick={() => setShowLogoutModal(true)}
-                className="
-                  p-1 text-bone hover:text-beige
-                  focus:outline-none transition
-                "
+                className="p-1 text-bone hover:text-beige focus:outline-none transition"
               >
                 <LogoutIcon className="w-4 h-4 fill-current" />
               </button>
