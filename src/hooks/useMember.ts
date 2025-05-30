@@ -1,18 +1,18 @@
 // src/hooks/useMember.ts
 import { useQuery } from "@tanstack/react-query";
-import { getMember } from "../services/MemberService";
+import { MemberService } from "../services/MemberService";
 import type { Member } from "../models/Member";
 
-export function useMember(memberId: string | null) {
+export function useMember(uid: string | null) {
   return useQuery<Member, Error>({
-    queryKey: ["member", memberId],
-    queryFn: () => {
-      if (!memberId) {
-        return Promise.reject(new Error("No memberId"));
+    queryKey: ["member", uid],
+    queryFn: async () => {
+      if (!uid) {
+        throw new Error("No UID provided");
       }
-      return getMember(memberId);
+      return MemberService.getMemberByUid(uid);
     },
-    enabled: Boolean(memberId),
-    staleTime: 1000 * 60 * 5,
+    enabled: Boolean(uid),
+    staleTime: 1000 * 60 * 5, // 5 minutes
   });
 }

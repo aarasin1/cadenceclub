@@ -1,9 +1,7 @@
-// src/pages/Login.tsx
+// src/components/Login/Login.tsx
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../firebaseConfig";
-import { useQueryClient } from "@tanstack/react-query";
+import { useLoginMutation } from "../hooks/useAuthMutations";
 
 import FormContainer from "../components/Login/FormContainer";
 import InputField from "../components/Login/InputField";
@@ -12,25 +10,21 @@ import ErrorMessage from "../components/Login/ErrorMessage";
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [localError, setLocalError] = useState<string | null>(null);
+
+  const { mutateAsync: login, status, isError, error } = useLoginMutation();
+  const loading = status === "pending";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
-    setLoading(true);
+    setLocalError(null);
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-
-      queryClient.invalidateQueries({ queryKey: ["member"] });
+      await login({ email, password });
       navigate("/");
     } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
+      setLocalError(err.message);
     }
   };
 
@@ -40,7 +34,9 @@ const Login: React.FC = () => {
         Member Login
       </h1>
 
-      {error && <ErrorMessage message={error} />}
+      {(isError || localError) && (
+        <ErrorMessage message={localError ?? (error as Error).message} />
+      )}
 
       <form
         onSubmit={handleSubmit}
@@ -53,7 +49,6 @@ const Login: React.FC = () => {
           onChange={setEmail}
           required
         />
-
         <InputField
           label="Password"
           type="password"
@@ -61,7 +56,6 @@ const Login: React.FC = () => {
           onChange={setPassword}
           required
         />
-
         <AuthButton
           label="Sign In"
           loading={loading}
@@ -72,9 +66,9 @@ const Login: React.FC = () => {
         Don’t have an account?{" "}
         <Link
           to="/join"
-          className="text-navy hover:underline"
+          className="text-navy font-semibold hover:underline"
         >
-          Join Now
+          Sign up
         </Link>
       </p>
     </FormContainer>

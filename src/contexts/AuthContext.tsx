@@ -1,69 +1,109 @@
 // src/contexts/AuthContext.tsx
-import React, {
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-  ReactNode,
-} from "react";
-import type { User as FirebaseUser } from "firebase/auth";
-import { onAuthStateChanged, signOut } from "firebase/auth";
-import { auth } from "../firebaseConfig";
-import { getMember } from "../services/MemberService";
+import React, { createContext, useContext, useEffect, useState } from "react";
+import type { ReactNode } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import type { User } from "firebase/auth";
+import { AuthService } from "../services/AuthService";
+import { MemberService } from "../services/MemberService";
 import type { Member } from "../models/Member";
 
 interface AuthContextType {
-  firebaseUser: FirebaseUser | null;
+  user: User | null;
   member: Member | null;
-  loading: boolean;
+  authLoading: boolean;
+  memberLoading: boolean;
+  login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
 }
 
-const AuthContext = createContext<AuthContextType>({
-  firebaseUser: null,
-  member: null,
-  loading: true,
-  logout: async () => {},
-});
-
-export const useAuth = () => useContext(AuthContext);
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
-  const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
-  const [member, setMember] = useState<Member | null>(null);
-  const [loading, setLoading] = useState(true);
+  const qc = useQueryClient();
 
-  // subscribe to auth state
+  // track raw Firebase user
+  const [user, setUser] = useState<User | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
+
+  // subscribe to Firebase auth state
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      setFirebaseUser(user);
-      if (user) {
-        try {
-          const m = await getMember(user.uid);
-          setMember(m);
-        } catch {
-          setMember(null);
-        }
-      } else {
-        setMember(null);
-      }
-      setLoading(false);
+    const unsubscribe = AuthService.onAuthStateChanged((u) => {
+      setUser(u);
+      setAuthLoading(false);
+      // when auth state changes, invalidate member query
+      qc.invalidateQueries({ queryKey: ["member"] });
     });
     return unsubscribe;
-  }, []);
+  }, [qc]);
 
-  // logout helper
+  // fetch Member record for current user.uid
+  const { data: member, isLoading: memberLoading } = useQuery<Member, Error>({
+    queryKey: ["member", user?.uid ?? null],
+    queryFn: () => {
+      if (!user?.uid) throw new Error("No user UID");
+      return MemberService.getMemberByUid(user.uid);
+    },
+    enabled: Boolean(user?.uid),
+    staleTime: 1000 * 60 * 5,
+  });
+
+  // login mutation
+  const { mutateAsync: signInMutation } = useMutation({
+    mutationFn: ({ email, password }: { email: string; password: string }) =>
+      AuthService.signIn(email, password),
+    onSuccess: () => {
+      // auth state listener will update user & invalidate member
+    },
+  });
+
+  // logout mutation
+  const { mutateAsync: signOutMutation } = useMutation({
+    mutationFn: () => AuthService.signOut(),
+    onSuccess: () => {
+      // clear caches
+      qc.clear();
+    },
+  });
+
+  // wrapper to set loading flags
+  const login = async (email: string, password: string) => {
+    setAuthLoading(true);
+    try {
+      await signInMutation({ email, password });
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
   const logout = async () => {
-    await signOut(auth);
-    setMember(null);
-    // firebaseUser will become null automatically via onAuthStateChanged
+    setAuthLoading(true);
+    try {
+      await signOutMutation();
+    } finally {
+      setAuthLoading(false);
+    }
   };
 
   return (
-    <AuthContext.Provider value={{ firebaseUser, member, loading, logout }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        member: member ?? null,
+        authLoading,
+        memberLoading,
+        login,
+        logout,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
+};
+
+export const useAuth = (): AuthContextType => {
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error("useAuth must be inside AuthProvider");
+  return ctx;
 };
